@@ -8,21 +8,21 @@ using System.Xml.Linq;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace ETree1
 {
     class Program
     {
-        private static void Print(string s)
+        private void Print(string s)
         {
             Console.WriteLine(s);
         }
 
-        static Action GetAction(string s)
+        Action GetAction(string s, Action<string> action)
         {
             var str1 = Expression.Constant(s, typeof(string));
-            var mi = typeof(Program).GetMethod("Print", BindingFlags.Static | BindingFlags.NonPublic);
-            var lambda = Expression.Lambda(Expression.Call(mi, str1));
+            var lambda = Expression.Lambda(Expression.Invoke(Expression.Constant(action), str1));
             Action res = (Action)lambda.Compile();
             return res;
         }
@@ -30,9 +30,10 @@ namespace ETree1
         {
             try
             {
-                var ares1 = GetAction("World");
-                var ares2 = GetAction("Mars");
+                var p = new Program();
+                var ares1 = p.GetAction("World", p.Print);
                 ares1.Invoke();
+                var ares2 = p.GetAction("Mars", x => Console.WriteLine(x));
                 ares2.Invoke();
             }
             catch (Exception ex)
