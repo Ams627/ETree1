@@ -17,15 +17,23 @@ namespace ETree1
         {
             Console.WriteLine(s);
         }
+
+        static Action GetAction(string s)
+        {
+            var str1 = Expression.Constant(s, typeof(string));
+            var mi = typeof(Program).GetMethod("Print", BindingFlags.Static | BindingFlags.NonPublic);
+            var lambda = Expression.Lambda(Expression.Call(mi, str1));
+            Action res = (Action)lambda.Compile();
+            return res;
+        }
         private static void Main(string[] args)
         {
             try
             {
-                var str1 = Expression.Constant("Hello", typeof(string));
-                var mi = typeof(Program).GetMethod("Print", BindingFlags.Static | BindingFlags.NonPublic);
-                var lambda = Expression.Lambda(Expression.Call(mi, str1));
-                Action res = (Action)lambda.Compile();
-                res();
+                var ares1 = GetAction("World");
+                var ares2 = GetAction("Mars");
+                ares1.Invoke();
+                ares2.Invoke();
             }
             catch (Exception ex)
             {
